@@ -14,7 +14,7 @@ document.addEventListener('click', () => {
 const port = chrome.runtime.connect({ name: 'broadcast' })
 port.onMessage.addListener(state => {
   if (!app) {
-    app = Elm.Main.embed(mountNode)
+    app = Elm.Main.embed(mountNode, state)
     return
   }
   app.ports.onState.send(state)

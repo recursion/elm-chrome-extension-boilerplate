@@ -4,7 +4,8 @@ const Elm = require('./Main.elm')
 // initial state
 // this should be loaded to/from chrome storage eventually
 let currState = {
-  clicks: 0
+  clicks: 0,
+  infoWindowVisible: true
 }
 
 const app = Elm.Main.worker(currState)
@@ -29,7 +30,7 @@ chrome.runtime.onConnect.addListener(port => {
 function broadcast (state) {
   currState = state
   for (const port of listeners) {
-    port.postMessage(state)
+    port.postMessage(currState)
   }
 }
 
@@ -38,7 +39,16 @@ app.ports.broadcast.subscribe(state => {
 })
 
 chrome.runtime.onMessage.addListener((request, sender) => {
-  if (request.kind === 'clicked') {
-    app.ports.clicked.send(null)
+  switch (request.kind) {
+    case 'clicked':
+      app.ports.clicked.send(null)
+      break
+
+    case 'changeWindowVisibility':
+      app.ports.changeWindowVisibility.send(null)
+      break
+
+    default:
+      console.log('Unknown message type: ', request.kind)
   }
 })

@@ -6,8 +6,11 @@ message passing.
 
 # Modifications from original:
     - Moved each component into a src folder
+    - added data types for portData and infoWindow (draggable)
     - Components now start loading only once the dom has loaded.
     - added draggable for draggable components.
+    - TODO: make draggable infoWindow popup only on selected sites.
+
 
 ![screenshot](https://i.imgur.com/Y8Z0Wwn.png)
 

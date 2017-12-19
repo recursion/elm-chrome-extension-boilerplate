@@ -6,17 +6,16 @@ let app
 const port = chrome.runtime.connect({ name: 'broadcast' })
 
 window.addEventListener('DOMContentLoaded', () => {
-  if (!app) {
-    app = Elm.Main.embed(mountNode)
-    return
-  }
-
+  app = Elm.Main.embed(mountNode, {clicks: 0, infoWindowVisible: false})
   port.onMessage.addListener(state => {
-    // mount app on first broadcast
     app.ports.onState.send(state)
   })
 
-  document.addEventListener('click', () => {
-    chrome.runtime.sendMessage({ kind: 'clicked' })
+  app.ports.changeInfoWindowVisibility.subscribe(visibility => {
+    chrome.runtime.sendMessage({ kind: 'changeWindowVisibility' })
   })
+})
+
+document.addEventListener('click', () => {
+  chrome.runtime.sendMessage({ kind: 'clicked' })
 })

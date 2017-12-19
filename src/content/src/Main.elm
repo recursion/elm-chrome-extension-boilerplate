@@ -2,21 +2,27 @@ port module Main exposing (..)
 
 import Html exposing (Html)
 import Html.Attributes as A
-import Model exposing (Model, Position)
+import Model exposing (Model, Position, PortData, InfoWindow)
 import Draggable
 
 
 -- PORTS FROM JAVASCRIPT
 
 
-port onState : (Int -> msg) -> Sub msg
+port onState : (PortData -> msg) -> Sub msg
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( { clicks = 0
-      , xy = Position 0 0
-      , drag = Draggable.init
+init : PortData -> ( Model, Cmd Msg )
+init portData =
+    ( { portData =
+            { clicks = portData.clicks
+            , infoWindowVisible = portData.infoWindowVisible
+            }
+      , infoWindow =
+            { xy = Position 0 0
+            , drag = Draggable.init
+            , visible = portData.infoWindowVisible
+            }
       }
     , Cmd.none
     )
@@ -26,13 +32,13 @@ type Msg
     = NoOp
     | OnDragBy Draggable.Delta
     | DragMsg (Draggable.Msg ())
-    | NewState Int
+    | NewState PortData
 
 
 subscriptions : Model -> Sub Msg
-subscriptions { drag } =
+subscriptions { infoWindow } =
     Sub.batch
-        [ Draggable.subscriptions DragMsg drag
+        [ Draggable.subscriptions DragMsg infoWindow.drag
         , onState NewState
         ]
 
@@ -43,21 +49,51 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        NewState clicks ->
-            ( { model | clicks = clicks }, Cmd.none )
+        NewState portDataIn ->
+            let
+                portData =
+                    model.portData
+
+                a =
+                    Debug.log (toString portData) ()
+
+                nextPortData =
+                    { portData
+                        | clicks = portDataIn.clicks
+                        , infoWindowVisible = portDataIn.infoWindowVisible
+                    }
+
+                infoWindow =
+                    model.infoWindow
+
+                nextInfoWindow =
+                    { infoWindow | visible = portDataIn.infoWindowVisible }
+            in
+                ( { model | portData = nextPortData, infoWindow = nextInfoWindow }, Cmd.none )
 
         OnDragBy ( dx, dy ) ->
-            ( { model | xy = Position (model.xy.x + dx) (model.xy.y + dy) }
-            , Cmd.none
-            )
+            let
+                infoWindow =
+                    model.infoWindow
+
+                nextInfoWindow =
+                    { infoWindow | xy = Position (infoWindow.xy.x + dx) (infoWindow.xy.y + dy) }
+            in
+                ( { model | infoWindow = nextInfoWindow }
+                , Cmd.none
+                )
 
         DragMsg dragMsg ->
-            Draggable.update dragConfig dragMsg model
+            let
+                ( nextInfoWindow, infoWindowCmd ) =
+                    Draggable.update dragConfig dragMsg model.infoWindow
+            in
+                ( { model | infoWindow = nextInfoWindow }, infoWindowCmd )
 
 
-main : Program Never Model Msg
+main : Program PortData Model Msg
 main =
-    Html.program
+    Html.programWithFlags
         { init = init
         , update = update
         , view = view
@@ -71,10 +107,22 @@ dragConfig =
 
 
 view : Model -> Html Msg
-view { xy } =
+view model =
+    if model.infoWindow.visible then
+        infoWindow model.infoWindow
+    else
+        let
+            style =
+                [ "display" => "none" ]
+        in
+            Html.div [ A.style style ] []
+
+
+infoWindow : InfoWindow -> Html Msg
+infoWindow window =
     let
         translate =
-            "translate(" ++ (toString xy.x) ++ "px, " ++ (toString xy.y) ++ "px)"
+            "translate(" ++ (toString window.xy.x) ++ "px, " ++ (toString window.xy.y) ++ "px)"
 
         style =
             [ "transform" => translate
