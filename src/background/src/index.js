@@ -5,7 +5,7 @@ const Elm = require('./Main.elm')
 // this should be loaded to/from chrome storage eventually
 let currState = {
   clicks: 0,
-  infoWindowVisible: true
+  infoWindowVisible: false
 }
 
 const app = Elm.Main.worker(currState)
