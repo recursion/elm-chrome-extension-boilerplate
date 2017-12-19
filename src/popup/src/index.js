@@ -12,10 +12,10 @@ window.addEventListener('DOMContentLoaded', () => {
   })
 
   app.ports.changeInfoWindowVisibility.subscribe(visibility => {
-    chrome.runtime.sendMessage({ kind: 'changeWindowVisibility' })
+    chrome.runtime.sendMessage({ msg: 'changeWindowVisibility' })
   })
 })
 
 document.addEventListener('click', () => {
-  chrome.runtime.sendMessage({ kind: 'clicked' })
+  chrome.runtime.sendMessage({ msg: 'clicked' })
 })

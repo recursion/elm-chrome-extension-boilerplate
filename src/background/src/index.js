@@ -39,7 +39,7 @@ app.ports.broadcast.subscribe(state => {
 })
 
 chrome.runtime.onMessage.addListener((request, sender) => {
-  switch (request.kind) {
+  switch (request.msg) {
     case 'clicked':
       app.ports.clicked.send(null)
       break

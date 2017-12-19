@@ -8,7 +8,7 @@ const Elm = require('./Main.elm')
 let app
 
 document.addEventListener('click', () => {
-  chrome.runtime.sendMessage({ kind: 'clicked' })
+  chrome.runtime.sendMessage({ msg: 'clicked' })
 })
 
 const port = chrome.runtime.connect({ name: 'broadcast' })
