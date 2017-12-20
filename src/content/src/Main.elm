@@ -2,37 +2,43 @@ port module Main exposing (..)
 
 import Html exposing (Html)
 import Html.Attributes as A
-import Model exposing (Model, Position, PortData, InfoWindow)
+import Model exposing (Position, ChromeState, InfoWindow)
 import Draggable
 
 
 -- PORTS FROM JAVASCRIPT
 
 
-port onState : (PortData -> msg) -> Sub msg
+port onState : (ChromeState -> msg) -> Sub msg
 
 
-init : PortData -> ( Model, Cmd Msg )
-init portData =
-    ( { portData =
-            { clicks = portData.clicks
-            , infoWindowVisible = portData.infoWindowVisible
-            }
-      , infoWindow =
-            { xy = Position 0 0
-            , drag = Draggable.init
-            , visible = portData.infoWindowVisible
-            }
-      }
-    , Cmd.none
-    )
+type alias Model =
+    { infoWindow : InfoWindow
+    , chromeState : ChromeState
+    }
 
 
 type Msg
     = NoOp
     | OnDragBy Draggable.Delta
     | DragMsg (Draggable.Msg ())
-    | NewState PortData
+    | NewState ChromeState
+
+
+init : ChromeState -> ( Model, Cmd Msg )
+init chromeState =
+    ( { chromeState =
+            { clicks = chromeState.clicks
+            , infoWindowVisible = chromeState.infoWindowVisible
+            }
+      , infoWindow =
+            { xy = Position 0 0
+            , drag = Draggable.init
+            , visible = chromeState.infoWindowVisible
+            }
+      }
+    , Cmd.none
+    )
 
 
 subscriptions : Model -> Sub Msg
@@ -49,27 +55,24 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        NewState portDataIn ->
+        NewState chromeStateIn ->
             let
-                portData =
-                    model.portData
+                chromeState =
+                    model.chromeState
 
-                a =
-                    Debug.log (toString portData) ()
-
-                nextPortData =
-                    { portData
-                        | clicks = portDataIn.clicks
-                        , infoWindowVisible = portDataIn.infoWindowVisible
+                nextChromeState =
+                    { chromeState
+                        | clicks = chromeStateIn.clicks
+                        , infoWindowVisible = chromeStateIn.infoWindowVisible
                     }
 
                 infoWindow =
                     model.infoWindow
 
                 nextInfoWindow =
-                    { infoWindow | visible = portDataIn.infoWindowVisible }
+                    { infoWindow | visible = chromeStateIn.infoWindowVisible }
             in
-                ( { model | portData = nextPortData, infoWindow = nextInfoWindow }, Cmd.none )
+                ( { model | chromeState = nextChromeState, infoWindow = nextInfoWindow }, Cmd.none )
 
         OnDragBy ( dx, dy ) ->
             let
@@ -91,7 +94,7 @@ update msg model =
                 ( { model | infoWindow = nextInfoWindow }, infoWindowCmd )
 
 
-main : Program PortData Model Msg
+main : Program ChromeState Model Msg
 main =
     Html.programWithFlags
         { init = init

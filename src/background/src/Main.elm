@@ -1,7 +1,6 @@
 port module Main exposing (..)
 
-import Model exposing (Model, Position, PortData)
-import Draggable
+import Model exposing (Position, ChromeState)
 
 
 {- BUG? Runtime error if I don't import Json.Decode -}
@@ -19,7 +18,7 @@ port changeWindowVisibility : (() -> msg) -> Sub msg
 -- PORTS TO JAVASCRIPT
 
 
-port broadcast : PortData -> Cmd msg
+port broadcast : ChromeState -> Cmd msg
 
 
 
@@ -38,17 +37,14 @@ type alias Flags =
     }
 
 
+type alias Model =
+    { clicks : Int, infoWindowVisible : Bool }
+
+
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( { portData =
-            { clicks = flags.clicks
-            , infoWindowVisible = flags.infoWindowVisible
-            }
-      , infoWindow =
-            { xy = Position 32 32
-            , drag = Draggable.init
-            , visible = flags.infoWindowVisible
-            }
+    ( { clicks = flags.clicks
+      , infoWindowVisible = flags.infoWindowVisible
       }
     , Cmd.none
     )
@@ -62,42 +58,29 @@ update msg model =
 
         ToggleInfoWindowVisibility ->
             let
-                infoWindow =
-                    model.infoWindow
-
-                nextInfoWindow =
-                    { infoWindow | visible = not infoWindow.visible }
-
-                pd =
-                    model.portData
-
-                nextPortData =
-                    { pd | infoWindowVisible = not pd.infoWindowVisible }
+                nextModel =
+                    { model
+                        | infoWindowVisible = not model.infoWindowVisible
+                    }
             in
-                ( { model
-                    | infoWindow = nextInfoWindow
-                    , portData = nextPortData
-                  }
-                , broadcast nextPortData
+                ( nextModel
+                , broadcast nextModel
                 )
 
         Click ->
             let
-                portData =
-                    model.portData
-
-                nextPortData =
-                    { portData | clicks = portData.clicks + 1 }
-
                 nextModel =
-                    { model | portData = nextPortData }
+                    { model | clicks = model.clicks + 1 }
             in
-                ( nextModel, broadcast nextModel.portData )
+                ( nextModel, broadcast nextModel )
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch [ clicked (\_ -> Click), changeWindowVisibility (\_ -> ToggleInfoWindowVisibility) ]
+    Sub.batch
+        [ clicked (\_ -> Click)
+        , changeWindowVisibility (\_ -> ToggleInfoWindowVisibility)
+        ]
 
 
 main : Program Flags Model Msg

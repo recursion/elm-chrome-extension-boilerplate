@@ -4,12 +4,8 @@ import Draggable
 
 
 -- This is the model in common among all of our apps
-
-
-type alias Model =
-    { infoWindow : InfoWindow
-    , portData : PortData
-    }
+-- TODO: change common Model to our ChromeState record
+-- and move each components individual model to its own file
 
 
 type alias InfoWindow =
@@ -25,7 +21,11 @@ type alias Position =
     }
 
 
-type alias PortData =
+
+-- The state shared across chrome (and likely saved in chrome storage)
+
+
+type alias ChromeState =
     { clicks : Int
     , infoWindowVisible : Bool
     }

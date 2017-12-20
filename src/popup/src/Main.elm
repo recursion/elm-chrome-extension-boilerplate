@@ -1,33 +1,24 @@
 port module Main exposing (..)
 
-import Model exposing (Model, Position, PortData)
+import Model exposing (Position, ChromeState)
 import Html exposing (Html)
 import Html.Attributes as A
 import Html.Events exposing (onClick)
-import Draggable
 
 
 -- PORTS FROM JAVASCRIPT
 
 
-port onState : (PortData -> msg) -> Sub msg
+port onState : (ChromeState -> msg) -> Sub msg
 
 
 port changeInfoWindowVisibility : Bool -> Cmd msg
 
 
-init : PortData -> ( Model, Cmd Msg )
-init pd =
-    ( { portData =
-            { pd
-                | clicks = pd.clicks
-                , infoWindowVisible = pd.infoWindowVisible
-            }
-      , infoWindow =
-            { xy = Position 0 0
-            , drag = Draggable.init
-            , visible = pd.infoWindowVisible
-            }
+init : ChromeState -> ( ChromeState, Cmd Msg )
+init cs =
+    ( { clicks = cs.clicks
+      , infoWindowVisible = cs.infoWindowVisible
       }
     , Cmd.none
     )
@@ -36,10 +27,10 @@ init pd =
 type Msg
     = NoOp
     | ToggleInfoWindowVisibility
-    | NewState PortData
+    | NewState ChromeState
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> ChromeState -> ( ChromeState, Cmd Msg )
 update msg model =
     case msg of
         NoOp ->
@@ -47,45 +38,23 @@ update msg model =
 
         ToggleInfoWindowVisibility ->
             let
-                infoWindow =
-                    model.infoWindow
-
                 visibility =
-                    not infoWindow.visible
-
-                nextInfoWindow =
-                    { infoWindow | visible = visibility }
+                    not model.infoWindowVisible
             in
-                ( { model | infoWindow = nextInfoWindow }
+                ( { model | infoWindowVisible = visibility }
                 , changeInfoWindowVisibility visibility
                 )
 
-        NewState pd ->
-            let
-                portData =
-                    model.portData
-
-                nextPortData =
-                    { portData
-                        | clicks = pd.clicks
-                        , infoWindowVisible = pd.infoWindowVisible
-                    }
-
-                infoWindow =
-                    model.infoWindow
-
-                nextInfoWindow =
-                    { infoWindow | visible = pd.infoWindowVisible }
-            in
-                ( { model
-                    | portData = nextPortData
-                    , infoWindow = nextInfoWindow
-                  }
-                , Cmd.none
-                )
+        NewState cs ->
+            ( { model
+                | clicks = cs.clicks
+                , infoWindowVisible = cs.infoWindowVisible
+              }
+            , Cmd.none
+            )
 
 
-view : Model -> Html Msg
+view : ChromeState -> Html Msg
 view model =
     Html.div
         [ A.style
@@ -93,13 +62,13 @@ view model =
             , ( "height", "100px" )
             ]
         ]
-        [ Html.text ("[PopUp] clicks: " ++ toString model.portData.clicks)
+        [ Html.text ("[PopUp] clicks: " ++ toString model.clicks)
         , Html.fieldset []
             [ Html.label []
                 [ Html.input
                     [ A.type_ "checkbox"
                     , onClick ToggleInfoWindowVisibility
-                    , A.checked model.infoWindow.visible
+                    , A.checked model.infoWindowVisible
                     ]
                     []
                 , Html.text "Show InfoWindow"
@@ -108,12 +77,12 @@ view model =
         ]
 
 
-subscriptions : Model -> Sub Msg
+subscriptions : ChromeState -> Sub Msg
 subscriptions model =
     onState NewState
 
 
-main : Program PortData Model Msg
+main : Program ChromeState ChromeState Msg
 main =
     Html.programWithFlags
         { init = init

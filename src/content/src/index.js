@@ -7,6 +7,9 @@ document.body.prepend(mountNode)
 const Elm = require('./Main.elm')
 let app
 
+document.addEventListener('DOMContentLoaded', () => {
+})
+
 document.addEventListener('click', () => {
   chrome.runtime.sendMessage({ msg: 'clicked' })
 })
