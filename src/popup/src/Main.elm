@@ -19,6 +19,7 @@ init : ChromeState -> ( ChromeState, Cmd Msg )
 init cs =
     ( { clicks = cs.clicks
       , infoWindowVisible = cs.infoWindowVisible
+      , infoWindowPosition = Position 0 0
       }
     , Cmd.none
     )
@@ -49,6 +50,7 @@ update msg model =
             ( { model
                 | clicks = cs.clicks
                 , infoWindowVisible = cs.infoWindowVisible
+                , infoWindowPosition = cs.infoWindowPosition
               }
             , Cmd.none
             )

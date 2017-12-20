@@ -8,7 +8,11 @@ const port = chrome.runtime.connect({ name: 'broadcast' })
 window.addEventListener('DOMContentLoaded', () => {
   // TODO: this state needs to be loaded from somewhere else (chrome storage?)
   // or possibly during the first state change
-  app = Elm.Main.embed(mountNode, {clicks: 0, infoWindowVisible: false})
+  app = Elm.Main.embed(mountNode, 
+    { clicks: 0,
+      infoWindowVisible: false,
+      infoWindowPosition: {x: 0, y: 0}
+    })
   port.onMessage.addListener(state => {
     app.ports.onState.send(state)
   })

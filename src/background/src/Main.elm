@@ -4,7 +4,10 @@ import Model exposing (Position, ChromeState)
 
 
 {- BUG? Runtime error if I don't import Json.Decode -}
--- import Json.Decode
+
+import Json.Decode
+
+
 -- PORTS FROM JAVASCRIPT
 
 
@@ -31,20 +34,15 @@ type Msg
     | ToggleInfoWindowVisibility
 
 
-type alias Flags =
-    { clicks : Int
-    , infoWindowVisible : Bool
-    }
-
-
 type alias Model =
-    { clicks : Int, infoWindowVisible : Bool }
+    { clicks : Int, infoWindowVisible : Bool, infoWindowPosition : Position }
 
 
-init : Flags -> ( Model, Cmd Msg )
-init flags =
-    ( { clicks = flags.clicks
-      , infoWindowVisible = flags.infoWindowVisible
+init : ChromeState -> ( Model, Cmd Msg )
+init chromeState =
+    ( { clicks = chromeState.clicks
+      , infoWindowVisible = chromeState.infoWindowVisible
+      , infoWindowPosition = chromeState.infoWindowPosition
       }
     , Cmd.none
     )
@@ -83,7 +81,7 @@ subscriptions model =
         ]
 
 
-main : Program Flags Model Msg
+main : Program ChromeState Model Msg
 main =
     Platform.programWithFlags
         { init = init

@@ -3,9 +3,11 @@ const Elm = require('./Main.elm')
 
 // initial state
 // TODO: load/save this to chrome storage
+// TODO: store settings based on the current location
 let currState = {
   clicks: 0,
-  infoWindowVisible: false
+  infoWindowVisible: false,
+  infoWindowPosition: {x: 0, y: 0}
 }
 
 const app = Elm.Main.worker(currState)
@@ -34,6 +36,7 @@ chrome.runtime.onConnect.addListener(port => {
 
 // broadcast application data
 // to our listeners
+// TODO: save the current state to chrome storage on changes
 function broadcast (state) {
   currState = state
   for (const port of listeners) {
@@ -56,6 +59,10 @@ chrome.runtime.onMessage.addListener((request, sender) => {
 
     case 'changeWindowVisibility':
       app.ports.changeWindowVisibility.send(null)
+      break
+
+    case 'locationChange':
+      console.log('New Location: ', request.location)
       break
 
     default:

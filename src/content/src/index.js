@@ -7,8 +7,8 @@ document.body.prepend(mountNode)
 const Elm = require('./Main.elm')
 let app
 
-document.addEventListener('DOMContentLoaded', () => {
-})
+// send the current location to our background app
+chrome.runtime.sendMessage({msg: 'locationChange', location: window.location})
 
 document.addEventListener('click', () => {
   chrome.runtime.sendMessage({ msg: 'clicked' })

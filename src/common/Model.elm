@@ -1,18 +1,7 @@
 module Model exposing (..)
 
-import Draggable
-
-
 -- This is the model in common among all of our apps
 -- TODO: change common Model to our ChromeState record
--- and move each components individual model to its own file
-
-
-type alias InfoWindow =
-    { xy : Position
-    , drag : Draggable.State ()
-    , visible : Bool
-    }
 
 
 type alias Position =
@@ -28,4 +17,5 @@ type alias Position =
 type alias ChromeState =
     { clicks : Int
     , infoWindowVisible : Bool
+    , infoWindowPosition : Position
     }

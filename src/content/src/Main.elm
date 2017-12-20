@@ -2,7 +2,7 @@ port module Main exposing (..)
 
 import Html exposing (Html)
 import Html.Attributes as A
-import Model exposing (Position, ChromeState, InfoWindow)
+import Model exposing (Position, ChromeState)
 import Draggable
 
 
@@ -13,8 +13,9 @@ port onState : (ChromeState -> msg) -> Sub msg
 
 
 type alias Model =
-    { infoWindow : InfoWindow
-    , chromeState : ChromeState
+    { xy : Position
+    , drag : Draggable.State ()
+    , visible : Bool
     }
 
 
@@ -27,26 +28,25 @@ type Msg
 
 init : ChromeState -> ( Model, Cmd Msg )
 init chromeState =
-    ( { chromeState =
-            { clicks = chromeState.clicks
-            , infoWindowVisible = chromeState.infoWindowVisible
-            }
-      , infoWindow =
-            { xy = Position 0 0
-            , drag = Draggable.init
-            , visible = chromeState.infoWindowVisible
-            }
+    ( { xy = Position 0 0
+      , drag = Draggable.init
+      , visible = chromeState.infoWindowVisible
       }
     , Cmd.none
     )
 
 
 subscriptions : Model -> Sub Msg
-subscriptions { infoWindow } =
+subscriptions model =
     Sub.batch
-        [ Draggable.subscriptions DragMsg infoWindow.drag
+        [ Draggable.subscriptions DragMsg model.drag
         , onState NewState
         ]
+
+
+dragConfig : Draggable.Config () Msg
+dragConfig =
+    Draggable.basicConfig OnDragBy
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -56,42 +56,28 @@ update msg model =
             ( model, Cmd.none )
 
         NewState chromeStateIn ->
-            let
-                chromeState =
-                    model.chromeState
-
-                nextChromeState =
-                    { chromeState
-                        | clicks = chromeStateIn.clicks
-                        , infoWindowVisible = chromeStateIn.infoWindowVisible
-                    }
-
-                infoWindow =
-                    model.infoWindow
-
-                nextInfoWindow =
-                    { infoWindow | visible = chromeStateIn.infoWindowVisible }
-            in
-                ( { model | chromeState = nextChromeState, infoWindow = nextInfoWindow }, Cmd.none )
+            ( { model
+                | visible = chromeStateIn.infoWindowVisible
+                , xy = chromeStateIn.infoWindowPosition
+              }
+            , Cmd.none
+            )
 
         OnDragBy ( dx, dy ) ->
             let
-                infoWindow =
-                    model.infoWindow
-
-                nextInfoWindow =
-                    { infoWindow | xy = Position (infoWindow.xy.x + dx) (infoWindow.xy.y + dy) }
+                nextModel =
+                    { model | xy = Position (model.xy.x + dx) (model.xy.y + dy) }
             in
-                ( { model | infoWindow = nextInfoWindow }
+                ( nextModel
                 , Cmd.none
                 )
 
         DragMsg dragMsg ->
             let
-                ( nextInfoWindow, infoWindowCmd ) =
-                    Draggable.update dragConfig dragMsg model.infoWindow
+                ( nextModel, nextCmd ) =
+                    Draggable.update dragConfig dragMsg model
             in
-                ( { model | infoWindow = nextInfoWindow }, infoWindowCmd )
+                ( nextModel, nextCmd )
 
 
 main : Program ChromeState Model Msg
@@ -104,24 +90,24 @@ main =
         }
 
 
-dragConfig : Draggable.Config () Msg
-dragConfig =
-    Draggable.basicConfig OnDragBy
-
-
 view : Model -> Html Msg
 view model =
-    if model.infoWindow.visible then
-        infoWindow model.infoWindow
+    if model.visible then
+        infoWindow model
     else
-        let
-            style =
-                [ "display" => "none" ]
-        in
-            Html.div [ A.style style ] []
+        noView
 
 
-infoWindow : InfoWindow -> Html Msg
+noView : Html Msg
+noView =
+    let
+        style =
+            [ "display" => "none" ]
+    in
+        Html.div [ A.style style ] []
+
+
+infoWindow : Model -> Html Msg
 infoWindow window =
     let
         translate =
