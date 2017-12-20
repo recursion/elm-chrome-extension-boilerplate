@@ -49,6 +49,6 @@ chrome.runtime.onMessage.addListener((request, sender) => {
       break
 
     default:
-      console.log('Unknown message type: ', request.kind)
+      console.log('Unknown message type: ', request.msg)
   }
 })
