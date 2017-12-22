@@ -35,7 +35,10 @@ type Msg
 
 
 type alias Model =
-    { clicks : Int, infoWindowVisible : Bool, infoWindowPosition : Position }
+    { clicks : Int
+    , infoWindowVisible : Bool
+    , infoWindowPosition : Position
+    }
 
 
 init : ChromeState -> ( Model, Cmd Msg )
