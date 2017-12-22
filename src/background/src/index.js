@@ -1,9 +1,16 @@
 const Elm = require('./Main.elm')
+const store = require('./storage')
+
 /* global chrome */
 
 // initial state
 // TODO: load/save this to chrome storage
 // TODO: store settings based on the current location
+store.init()
+  .then((result) => {
+    console.log('In background js: got: ', result)
+  })
+
 let currState = {
   clicks: 0,
   infoWindowVisible: false,
