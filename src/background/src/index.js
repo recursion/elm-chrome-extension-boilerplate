@@ -1,5 +1,5 @@
 const Elm = require('./Main.elm')
-const store = require('./storage')
+const store = require('../../store')
 
 /* global chrome */
 

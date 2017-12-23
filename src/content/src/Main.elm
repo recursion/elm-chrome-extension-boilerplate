@@ -58,7 +58,6 @@ update msg model =
         NewState chromeStateIn ->
             ( { model
                 | visible = chromeStateIn.infoWindowVisible
-                , xy = chromeStateIn.infoWindowPosition
               }
             , Cmd.none
             )

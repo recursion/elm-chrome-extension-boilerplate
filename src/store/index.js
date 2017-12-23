@@ -1,3 +1,4 @@
+import { settings } from './settings'
 // storage.js
 // api for chrome storage
 // set: takes js values and stores them on chrome storage
@@ -11,17 +12,17 @@ export const init = () => {
     get(null)
       .then((results) => {
         if (results) {
-          if (!results.version || results.version !== defaults.version) {
+          if (!results.version || results.version !== settings.version) {
             console.log('Settings need to be updated.')
-            set(defaults)
-            resolve(defaults)
+            set(settings)
+            resolve(settings)
           }
           resolve(results)
         } else {
-          // load defaults
+          // load settings
           console.log('Loading default settings....')
-          set(defaults)
-          resolve(defaults)
+          set(settings)
+          resolve(settings)
         }
       })
   })
@@ -67,14 +68,3 @@ settings:
 siteUrl: position, lotsize, offset, api-keys
 
 */
-const settings = {
-  offset: '0.1',
-  lotsize: '0.001',
-  multipliers: [0.1, 0.25, 0.5, 0.75, 1, 2, 3, 5, 10, 25, 50, 100],
-  infoWindowPosition: {x: 0, y: 0}
-}
-
-const defaults = {
-  version: '0.0.2',
-  'gdax.com': settings
-}
